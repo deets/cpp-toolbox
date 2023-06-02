@@ -65,9 +65,23 @@ public:
 
   void dot(std::ostream& os, const char* time_signature) {
     os << "digraph timed_finite_automaton {\n";
-    os << "node [shape = doublecircle];";
-    os << _start_state << ";\n";
-    os << "node [shape = circle];\n";
+    // Render our start state
+    os << "node [shape = doublecircle];\n";
+    // if start is current, mark it as such
+    if(_start_state == _state) {
+      os << "node [style = filled];\n";
+      os << _start_state << ";\n";
+    }
+    else
+    {
+      // _start_state is not current, so spit it out
+      os << _start_state << ";\n";
+      // Explicitly render the active state
+      os << "node [shape = circle, style = filled];\n";
+      os << _state << ";\n";
+    }
+    // Reset node state for all other nodes
+    os << "node [shape = circle, style = \"\"];\n";
     for(const auto& transition : _timeout_transitions)
     {
       const auto [from, edge] = transition;

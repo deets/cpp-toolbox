@@ -92,9 +92,11 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     t.dot(ss, "us");
     const auto dot = ss.str();
     const char* expected = "digraph timed_finite_automaton {\n"
-                           "node [shape = doublecircle];0;\n"
-                           "node [shape = circle];\n"
-                           "}\n";
+    "node [shape = doublecircle];\n"
+    "node [style = filled];\n"
+    "0;\n"
+    "node [shape = circle, style = \"\"];\n"
+    "}\n";
     REQUIRE(dot == expected);
   }
   SECTION("Timed transition")
@@ -104,8 +106,10 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     t.dot(ss, "us");
     const auto dot = ss.str();
     const char* expected = "digraph timed_finite_automaton {\n"
-    "node [shape = doublecircle];0;\n"
-    "node [shape = circle];\n"
+    "node [shape = doublecircle];\n"
+    "node [style = filled];\n"
+    "0;\n"
+    "node [shape = circle, style = \"\"];\n"
     "0->1[label = \"1000us\"];\n"
     "}\n";
     REQUIRE(dot == expected);
@@ -118,10 +122,13 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     t.dot(ss, "us");
     const auto dot = ss.str();
     const char* expected = "digraph timed_finite_automaton {\n"
-    "node [shape = doublecircle];0;\n"
-    "node [shape = circle];\n"
+    "node [shape = doublecircle];\n"
+    "node [style = filled];\n"
+    "0;\n"
+    "node [shape = circle, style = \"\"];\n"
     "0->1[label = \"0\"];\n"
     "}\n";
+
     REQUIRE(dot == expected);
   }
 
@@ -132,9 +139,12 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     t.add_transition(A, 1000, B);
     t.dot(ss, "us");
     const auto dot = ss.str();
-    const char* expected = "digraph timed_finite_automaton {\n"
-    "node [shape = doublecircle];0;\n"
-    "node [shape = circle];\n"
+    const char* expected =
+    "digraph timed_finite_automaton {\n"
+    "node [shape = doublecircle];\n"
+    "node [style = filled];\n"
+    "0;\n"
+    "node [shape = circle, style = \"\"];\n"
     "0->1[label = \"1000us\"];\n"
     "0->1[label = \"0\"];\n"
     "}\n";
