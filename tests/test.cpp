@@ -181,4 +181,23 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     "}\n";
     REQUIRE(dot == expected);
   }
+
+  SECTION("Active state is marked")
+  {
+    std::stringstream ss;
+    t.add_transition(A, FOO, B);
+    t.feed(FOO);
+    t.dot(ss, "us");
+    const auto dot = ss.str();
+    const char* expected =
+    "digraph timed_finite_automaton {\n"
+    "node [shape = doublecircle];\n"
+    "A;\n"
+    "node [shape = circle, style = filled];\n"
+    "B;\n"
+    "node [shape = circle, style = \"\"];\n"
+    "A->B[label = \"FOO\"];\n"
+    "}\n";
+    REQUIRE(dot == expected);
+  }
 }
