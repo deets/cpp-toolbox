@@ -24,7 +24,11 @@ enum class state
   // once pressure fell off enough, we declare us being
   // launched.
   LAUNCHED,
-  // The motor cut out, so we are coasting
+  // The motor cut out
+  BURNOUT,
+  // after a second, separate
+  SEPARATION,
+  // shortly after the separation, we are in coasting
   COASTING,
   // We detected a pressure drop, and thus reached
   // the peak.
@@ -37,13 +41,17 @@ enum class state
 // Time is  measured in microseconds!
 enum timeouts : uint32_t {
   ACCELERATION = 1000*1000,
+  SEPARATION_TIMEOUT = 1000*1000,
 };
 
 enum class event {
   GROUND_PRESSURE_ESTABLISHED,
-  LAUNCH_PRESSURE_DROP,
+  PRESSURE_BELOW_LAUNCH_THRESHOLD,
+  PRESSURE_ABOVE_LAUNCH_THRESHOLD,
+  PRESSURE_PEAK_REACHED,
   ACCELERATION_BELOW_THRESHOLD,
   ACCELERATION_ABOVE_THRESHOLD,
+  ACCELERATION_NEGATIVE,
   EXPECTED_FLIGHT_TIME_REACHED,
 };
 
