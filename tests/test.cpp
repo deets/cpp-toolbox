@@ -1,6 +1,7 @@
-#include <catch2/catch_test_macros.hpp>
-
 #include "timed-finite-automaton.hpp"
+
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 enum State { A, B, C };
 
@@ -81,4 +82,18 @@ TEST_CASE( "Add state transition on timeout", "[tfa]" ) {
     REQUIRE(t.state() == A);
   }
 
+}
+
+TEST_CASE( "graphviz rendering", "[tfa]" ) {
+  TestAutomaton t{A};
+  SECTION("Single state is start state")
+  {
+    std::stringstream ss;
+    t.dot(ss);
+    const auto dot = ss.str();
+    const char* expected = "digraph timed_finite_automaton {\n"
+                           "node [shape = doublecircle];0;\n"
+                           "}\n";
+    REQUIRE(dot == expected);
+  }
 }

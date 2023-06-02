@@ -1,7 +1,7 @@
 // (c) Diez Roggisch, 2023
 // SPDX-License-Identifier: MIT
 #pragma once
-
+#include <ostream>
 #include <unordered_map>
 
 namespace tfa {
@@ -60,6 +60,13 @@ public:
       }
     }
     return false;
+  }
+
+  void dot(std::ostream& os) {
+    os << "digraph timed_finite_automaton {\n";
+    os << "node [shape = doublecircle];";
+    os << _state << ";\n";
+    os << "}\n";
   }
 
 private:
