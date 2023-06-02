@@ -1,12 +1,36 @@
 #include <catch2/catch_test_macros.hpp>
 
-unsigned int Factorial( unsigned int number ) {
-    return number <= 1 ? number : Factorial(number-1)*number;
+#include "timed-finite-automaton.hpp"
+
+enum State { A, B, C };
+
+enum Event {
+  FOO,
+  BAR,
+};
+
+using TestAutomaton = tfa::TimedFiniteAutomaton<State, Event, uint32_t>;
+
+TEST_CASE( "Instantiate Test Automaton", "[tfa]" ) {
+  TestAutomaton t{A};
+  REQUIRE( t.state() == A );
 }
 
-TEST_CASE( "Factorials are computed", "[factorial]" ) {
-    REQUIRE( Factorial(1) == 1 );
-    REQUIRE( Factorial(2) == 2 );
-    REQUIRE( Factorial(3) == 6 );
-    REQUIRE( Factorial(10) == 3628800 );
+
+TEST_CASE( "Add state transition on event", "[tfa]" ) {
+  TestAutomaton t{A};
+  t.add_transition(A, FOO, B);
+  REQUIRE( t.state() == A );
+
+  SECTION("Feeding FOO transitions to B")
+  {
+    REQUIRE(t.feed(FOO) == true);
+    REQUIRE(t.state() == B);
+  }
+
+    SECTION("Feeding BAR has no effect")
+  {
+    REQUIRE(t.feed(BAR) == false);
+    REQUIRE(t.state() == A);
+  }
 }
