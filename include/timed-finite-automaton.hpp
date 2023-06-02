@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <variant>
 #include <unordered_map>
 
 
@@ -12,7 +11,6 @@ template<typename State, typename Event, typename TimePoint>
 class TimedFiniteAutomaton {
 public:
   using Duration = decltype(TimePoint{} - TimePoint{});
-  using Transition = std::variant<Event, Duration>;
 
   TimedFiniteAutomaton(State start_state) : _state{start_state} {}
 
@@ -20,14 +18,33 @@ public:
 
   void add_transition(State from, Event what, State to)
   {
-    _transitions[from][Transition{what}] = to;
+    _event_transitions[from][what] = to;
+  }
+
+  void add_transition(State from, Duration after, State to)
+  {
+    _timeout_transitions[from] = std::make_pair(after, to);
+  }
+
+  bool elapsed(Duration duration)
+  {
+    if(_timeout_transitions.count(_state))
+    {
+      auto[timeout, to] = _timeout_transitions[_state];
+      if(duration >= timeout)
+      {
+        _state = to;
+        return true;
+      }
+    }
+    return false;
   }
 
   bool feed(Event what)
   {
-    if(_transitions.count(_state))
+    if(_event_transitions.count(_state))
     {
-      auto& candidate = _transitions[_state];
+      auto& candidate = _event_transitions[_state];
       if(candidate.count(what))
       {
         _state = candidate[what];
@@ -39,8 +56,8 @@ public:
 
 private:
   State _state;
-  std::unordered_map<State, std::unordered_map<Transition, State>> _transitions;
-
+  std::unordered_map<State, std::unordered_map<Event, State>> _event_transitions;
+  std::unordered_map<State, std::pair<Duration, State>> _timeout_transitions;
 };
 
 } // namespace tfa

@@ -34,3 +34,21 @@ TEST_CASE( "Add state transition on event", "[tfa]" ) {
     REQUIRE(t.state() == A);
   }
 }
+
+TEST_CASE( "Add state transition on timeout", "[tfa]" ) {
+  TestAutomaton t{A};
+  t.add_transition(A, 1000, B);
+  REQUIRE( t.state() == A );
+
+  SECTION("Feeding elapsed below threshold doesn't do anything")
+  {
+    REQUIRE(t.elapsed(500) == false);
+    REQUIRE(t.state() == A);
+  }
+
+  SECTION("Feeding above threshold triggers transition")
+  {
+    REQUIRE(t.elapsed(1000) == true);
+    REQUIRE(t.state() == B);
+  }
+}
