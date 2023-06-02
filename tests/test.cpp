@@ -12,6 +12,23 @@ enum Event {
 
 using TestAutomaton = tfa::TimedFiniteAutomaton<State, Event, uint32_t>;
 
+std::ostream &operator<<(std::ostream &os, const State &state)
+{
+  switch(state) {
+  case A:
+    os << "A";
+    break;
+  case B:
+    os << "B";
+    break;
+  case C:
+    os << "C";
+    break;
+  }
+  return os;
+}
+
+
 TEST_CASE( "Instantiate Test Automaton", "[tfa]" ) {
   TestAutomaton t{A};
   REQUIRE( t.state() == A );
@@ -94,7 +111,7 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     const char* expected = "digraph timed_finite_automaton {\n"
     "node [shape = doublecircle];\n"
     "node [style = filled];\n"
-    "0;\n"
+    "A;\n"
     "node [shape = circle, style = \"\"];\n"
     "}\n";
     REQUIRE(dot == expected);
@@ -108,9 +125,9 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     const char* expected = "digraph timed_finite_automaton {\n"
     "node [shape = doublecircle];\n"
     "node [style = filled];\n"
-    "0;\n"
+    "A;\n"
     "node [shape = circle, style = \"\"];\n"
-    "0->1[label = \"1000us\"];\n"
+    "A->B[label = \"1000us\"];\n"
     "}\n";
     REQUIRE(dot == expected);
   }
@@ -124,9 +141,9 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     const char* expected = "digraph timed_finite_automaton {\n"
     "node [shape = doublecircle];\n"
     "node [style = filled];\n"
-    "0;\n"
+    "A;\n"
     "node [shape = circle, style = \"\"];\n"
-    "0->1[label = \"0\"];\n"
+    "A->B[label = \"0\"];\n"
     "}\n";
 
     REQUIRE(dot == expected);
@@ -143,10 +160,10 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     "digraph timed_finite_automaton {\n"
     "node [shape = doublecircle];\n"
     "node [style = filled];\n"
-    "0;\n"
+    "A;\n"
     "node [shape = circle, style = \"\"];\n"
-    "0->1[label = \"1000us\"];\n"
-    "0->1[label = \"0\"];\n"
+    "A->B[label = \"1000us\"];\n"
+    "A->B[label = \"0\"];\n"
     "}\n";
     REQUIRE(dot == expected);
   }
