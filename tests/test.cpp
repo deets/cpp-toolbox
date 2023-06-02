@@ -93,7 +93,21 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     const auto dot = ss.str();
     const char* expected = "digraph timed_finite_automaton {\n"
                            "node [shape = doublecircle];0;\n"
+                           "node [shape = circle];\n"
                            "}\n";
+    REQUIRE(dot == expected);
+  }
+  SECTION("Timed transition")
+  {
+    std::stringstream ss;
+    t.add_transition(A, 1000, B);
+    t.dot(ss);
+    const auto dot = ss.str();
+    const char* expected = "digraph timed_finite_automaton {\n"
+    "node [shape = doublecircle];0;\n"
+    "node [shape = circle];\n"
+    "0->1[label = \"1000\"];\n"
+    "}\n";
     REQUIRE(dot == expected);
   }
 }

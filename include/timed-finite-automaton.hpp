@@ -13,6 +13,7 @@ public:
 
   TimedFiniteAutomaton(State start_state)
     : _state{start_state}
+    , _start_state{start_state}
     , _state_change{}
     , _now{}
   {}
@@ -65,12 +66,19 @@ public:
   void dot(std::ostream& os) {
     os << "digraph timed_finite_automaton {\n";
     os << "node [shape = doublecircle];";
-    os << _state << ";\n";
+    os << _start_state << ";\n";
+    os << "node [shape = circle];\n";
+    for(const auto& transition : _timeout_transitions)
+    {
+      const auto [from, edge] = transition;
+      const auto [timeout, to] = edge;
+      os << from << "->" << to << "[label = \"" << timeout << "\"];\n";
+    }
     os << "}\n";
   }
 
 private:
-  State _state;
+  State _start_state, _state;
   TimePoint _state_change;
   TimePoint _now;
 
