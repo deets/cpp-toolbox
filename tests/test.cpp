@@ -29,6 +29,20 @@ std::ostream &operator<<(std::ostream &os, const State &state)
 }
 
 
+std::ostream &operator<<(std::ostream &os, const Event &event)
+{
+  switch(event) {
+  case FOO:
+    os << "FOO";
+    break;
+  case BAR:
+    os << "BAR";
+    break;
+  }
+  return os;
+}
+
+
 TEST_CASE( "Instantiate Test Automaton", "[tfa]" ) {
   TestAutomaton t{A};
   REQUIRE( t.state() == A );
@@ -143,7 +157,7 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     "node [style = filled];\n"
     "A;\n"
     "node [shape = circle, style = \"\"];\n"
-    "A->B[label = \"0\"];\n"
+    "A->B[label = \"FOO\"];\n"
     "}\n";
 
     REQUIRE(dot == expected);
@@ -163,7 +177,7 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     "A;\n"
     "node [shape = circle, style = \"\"];\n"
     "A->B[label = \"1000us\"];\n"
-    "A->B[label = \"0\"];\n"
+    "A->B[label = \"FOO\"];\n"
     "}\n";
     REQUIRE(dot == expected);
   }
