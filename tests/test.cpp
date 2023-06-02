@@ -78,9 +78,15 @@ TEST_CASE( "Add state transition on timeout", "[tfa]" ) {
     REQUIRE(t.state() == A);
   }
 
-  SECTION("Feeding above threshold triggers transition")
+  SECTION("Feeding equal to threshold triggers transition")
   {
     REQUIRE(t.elapsed(1000) == true);
+    REQUIRE(t.state() == B);
+  }
+
+  SECTION("Feeding above threshold triggers transition")
+  {
+    REQUIRE(t.elapsed(1100) == true);
     REQUIRE(t.state() == B);
   }
 
