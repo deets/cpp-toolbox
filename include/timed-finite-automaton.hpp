@@ -55,6 +55,7 @@ public:
       if(candidate.count(what))
       {
         _state = candidate[what];
+        _state_change = _now;
         return true;
       }
     }

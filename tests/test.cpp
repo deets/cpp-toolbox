@@ -61,4 +61,24 @@ TEST_CASE( "Add state transition on timeout", "[tfa]" ) {
     REQUIRE(t.state() == B);
   }
 
+  SECTION("Changing state by event resets the state change timestamp")
+  {
+    // By adding this transition, and triggering it after the
+    // time based one, we expect the time based one not to
+    // work
+    t.add_transition(B, FOO, A);
+    REQUIRE(t.elapsed(1000) == true);
+    REQUIRE(t.state() == B);
+    // We progress time so that our state change
+    // to the current one is beyond the duration
+    // threshold and would trigger.
+    REQUIRE(t.elapsed(1000) == false);
+
+    REQUIRE(t.feed(FOO) == true);
+    REQUIRE(t.state() == A);
+    // Now the timer needs to be reset!
+    REQUIRE(t.elapsed(100) == false);
+    REQUIRE(t.state() == A);
+  }
+
 }
