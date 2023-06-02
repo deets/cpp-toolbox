@@ -4,7 +4,6 @@
 
 #include <unordered_map>
 
-
 namespace tfa {
 
 template<typename State, typename Event, typename TimePoint>
@@ -12,7 +11,11 @@ class TimedFiniteAutomaton {
 public:
   using Duration = decltype(TimePoint{} - TimePoint{});
 
-  TimedFiniteAutomaton(State start_state) : _state{start_state} {}
+  TimedFiniteAutomaton(State start_state)
+    : _state{start_state}
+    , _state_change{}
+    , _now{}
+  {}
 
   State state() { return _state; }
 
@@ -28,12 +31,16 @@ public:
 
   bool elapsed(Duration duration)
   {
+    _now += duration;
+    const auto elapsed = _now - _state_change;
+
     if(_timeout_transitions.count(_state))
     {
       auto[timeout, to] = _timeout_transitions[_state];
-      if(duration >= timeout)
+      if(elapsed >= timeout)
       {
         _state = to;
+        _state_change = _now;
         return true;
       }
     }
@@ -56,6 +63,9 @@ public:
 
 private:
   State _state;
+  TimePoint _state_change;
+  TimePoint _now;
+
   std::unordered_map<State, std::unordered_map<Event, State>> _event_transitions;
   std::unordered_map<State, std::pair<Duration, State>> _timeout_transitions;
 };

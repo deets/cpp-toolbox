@@ -51,4 +51,14 @@ TEST_CASE( "Add state transition on timeout", "[tfa]" ) {
     REQUIRE(t.elapsed(1000) == true);
     REQUIRE(t.state() == B);
   }
+
+  SECTION("Feeding mulitple increments eventually transitions")
+  {
+    for(auto i=1; i <= 10; ++i)
+    {
+      t.elapsed(100); // 10 * 100 == 1000
+    }
+    REQUIRE(t.state() == B);
+  }
+
 }
