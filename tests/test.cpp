@@ -89,7 +89,7 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
   SECTION("Single state is start state")
   {
     std::stringstream ss;
-    t.dot(ss);
+    t.dot(ss, "us");
     const auto dot = ss.str();
     const char* expected = "digraph timed_finite_automaton {\n"
                            "node [shape = doublecircle];0;\n"
@@ -101,12 +101,42 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
   {
     std::stringstream ss;
     t.add_transition(A, 1000, B);
-    t.dot(ss);
+    t.dot(ss, "us");
     const auto dot = ss.str();
     const char* expected = "digraph timed_finite_automaton {\n"
     "node [shape = doublecircle];0;\n"
     "node [shape = circle];\n"
-    "0->1[label = \"1000\"];\n"
+    "0->1[label = \"1000us\"];\n"
+    "}\n";
+    REQUIRE(dot == expected);
+  }
+
+  SECTION("Event transition")
+  {
+    std::stringstream ss;
+    t.add_transition(A, FOO, B);
+    t.dot(ss, "us");
+    const auto dot = ss.str();
+    const char* expected = "digraph timed_finite_automaton {\n"
+    "node [shape = doublecircle];0;\n"
+    "node [shape = circle];\n"
+    "0->1[label = \"0\"];\n"
+    "}\n";
+    REQUIRE(dot == expected);
+  }
+
+  SECTION("Event and timeout transition")
+  {
+    std::stringstream ss;
+    t.add_transition(A, FOO, B);
+    t.add_transition(A, 1000, B);
+    t.dot(ss, "us");
+    const auto dot = ss.str();
+    const char* expected = "digraph timed_finite_automaton {\n"
+    "node [shape = doublecircle];0;\n"
+    "node [shape = circle];\n"
+    "0->1[label = \"1000us\"];\n"
+    "0->1[label = \"0\"];\n"
     "}\n";
     REQUIRE(dot == expected);
   }

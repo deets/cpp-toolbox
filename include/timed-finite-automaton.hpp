@@ -63,7 +63,7 @@ public:
     return false;
   }
 
-  void dot(std::ostream& os) {
+  void dot(std::ostream& os, const char* time_signature) {
     os << "digraph timed_finite_automaton {\n";
     os << "node [shape = doublecircle];";
     os << _start_state << ";\n";
@@ -72,7 +72,16 @@ public:
     {
       const auto [from, edge] = transition;
       const auto [timeout, to] = edge;
-      os << from << "->" << to << "[label = \"" << timeout << "\"];\n";
+      os << from << "->" << to << "[label = \"" << timeout;
+      os << time_signature << "\"];\n";
+    }
+    for(const auto& transition : _event_transitions)
+    {
+      const auto& [from, edges] = transition;
+      for(const auto& edge : edges) {
+        const auto [event, to] = edge;
+        os << from << "->" << to << "[label = \"" << event << "\"];\n";
+      }
     }
     os << "}\n";
   }
