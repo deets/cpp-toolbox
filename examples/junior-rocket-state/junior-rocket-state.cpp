@@ -17,13 +17,22 @@ JuniorRocketState::JuniorRocketState()
   sm.add_transition(state::WAIT_FOR_LAUNCH, event::ACCELERATION_ABOVE_THRESHOLD, state::ACCELERATION_DETECTED);
   sm.add_transition(state::ACCELERATION_DETECTED, event::ACCELERATION_BELOW_THRESHOLD, state::WAIT_FOR_LAUNCH);
   sm.add_transition(state::ACCELERATION_DETECTED, timeouts::ACCELERATION, state::ACCELERATING);
+  sm.add_transition(state::ACCELERATING, event::ACCELERATION_BELOW_THRESHOLD, state::WAIT_FOR_LAUNCH);
   sm.add_transition(state::ACCELERATING, event::PRESSURE_BELOW_LAUNCH_THRESHOLD, state::LAUNCHED);
   sm.add_transition(state::LAUNCHED, event::ACCELERATION_NEGATIVE, state::BURNOUT);
+  sm.add_transition(state::LAUNCHED, timeouts::MOTOR_BURNTIME - timeouts::ACCELERATION, state::BURNOUT);
   sm.add_transition(state::BURNOUT, timeouts::SEPARATION_TIMEOUT, state::SEPARATION);
   sm.add_transition(state::SEPARATION, 0, state::COASTING);
   sm.add_transition(state::COASTING, event::PRESSURE_PEAK_REACHED, state::FALLING);
-  sm.add_transition(state::FALLING, 0, state::DROUGE_OPENED);
-  sm.add_transition(state::DROUGE_OPENED, event::PRESSURE_ABOVE_LAUNCH_THRESHOLD, state::LANDED);
+  sm.add_transition(state::COASTING, event::EXPECTED_APOGEE_TIME_REACHED, state::FALLING);
+  sm.add_transition(state::FALLING, timeouts::FALLING_PRESSURE_TIMEOUT, state::MEASURE_FALLING_PRESSURE1);
+  sm.add_transition(state::MEASURE_FALLING_PRESSURE1, timeouts::FALLING_PRESSURE_TIMEOUT, state::MEASURE_FALLING_PRESSURE2);
+  sm.add_transition(state::MEASURE_FALLING_PRESSURE2, timeouts::FALLING_PRESSURE_TIMEOUT, state::MEASURE_FALLING_PRESSURE3);
+  sm.add_transition(state::MEASURE_FALLING_PRESSURE3, event::PRESSURE_LINEAR, state::DROUGE_OPENED);
+  sm.add_transition(state::MEASURE_FALLING_PRESSURE3, event::PRESSURE_QUADRATIC, state::DROUGE_FAILED);
+  sm.add_transition(state::DROUGE_OPENED, event::PRESSURE_BELOW_LAUNCH_THRESHOLD, state::LANDED);
+  sm.add_transition(state::DROUGE_FAILED, event::PRESSURE_BELOW_LAUNCH_THRESHOLD, state::LANDED);
+  sm.add_transition(state::DROUGE_FAILED, event::RESTART_PRESSURE_MEASUREMENT, state::FALLING);
 }
 
 void JuniorRocketState::dot(std::ostream &os)
@@ -53,7 +62,11 @@ std::ostream& operator<<(std::ostream& os, const state& state)
     M_STATE(COASTING)
     M_STATE(PEAK_REACHED)
     M_STATE(FALLING)
+    M_STATE(MEASURE_FALLING_PRESSURE1)
+    M_STATE(MEASURE_FALLING_PRESSURE2)
+    M_STATE(MEASURE_FALLING_PRESSURE3)
     M_STATE(DROUGE_OPENED)
+    M_STATE(DROUGE_FAILED)
     M_STATE(LANDED);
   }
   return os;
@@ -75,7 +88,10 @@ std::ostream& operator<<(std::ostream& os, const event& event)
     M_EVENT(ACCELERATION_BELOW_THRESHOLD)
     M_EVENT(ACCELERATION_ABOVE_THRESHOLD)
     M_EVENT(ACCELERATION_NEGATIVE)
-    M_EVENT(EXPECTED_FLIGHT_TIME_REACHED);
+    M_EVENT(PRESSURE_LINEAR)
+    M_EVENT(PRESSURE_QUADRATIC)
+    M_EVENT(RESTART_PRESSURE_MEASUREMENT)
+    M_EVENT(EXPECTED_APOGEE_TIME_REACHED);
   }
   return os;
 }
@@ -86,6 +102,14 @@ std::ostream& operator<<(std::ostream& os, const event& event)
 int main(int argc, char *argv[])
 {
   JuniorRocketState state;
-  state.dot(std::cout);
+  if(argc == 2 && std::string(argv[1]) == "dot")
+  {
+    state.dot(std::cout);
+  }
+  else
+  {
+    std::cerr << "Unknown command\r\n";
+    return 1;
+  }
   return 0;
 }
