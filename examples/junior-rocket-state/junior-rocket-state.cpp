@@ -110,6 +110,8 @@ void JuniorRocketState::handle_state_transition(state to)
   case state::ACCELERATION_DETECTED:
     _liftoff_timestamp = *_last_timestamp;
     break;
+  default:
+    break;
   }
 }
 

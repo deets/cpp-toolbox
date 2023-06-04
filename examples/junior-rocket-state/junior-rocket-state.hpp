@@ -78,12 +78,30 @@ enum class event {
   RESTART_PRESSURE_MEASUREMENT,
 };
 
+#define M_UNUSED(variable) (void)variable;
 
 struct StateObserver {
-  virtual void data(uint32_t timestamp, float pressure, float acceleration) {};
-  virtual void state_changed(uint32_t timestamp, state) {};
-  virtual void event_produced(uint32_t timestamp, event) {};
-  virtual void elapsed(uint32_t timestamp, uint32_t elapsed) {};
+  virtual void data(uint32_t timestamp, float pressure, float acceleration)
+  {
+    M_UNUSED(timestamp);
+    M_UNUSED(pressure);
+    M_UNUSED(acceleration);
+  }
+
+  virtual void state_changed(uint32_t timestamp, state)
+  {
+    M_UNUSED(timestamp);
+  }
+  virtual void event_produced(uint32_t timestamp, event)
+  {
+    M_UNUSED(timestamp);
+  }
+
+  virtual void elapsed(uint32_t timestamp, uint32_t elapsed)
+  {
+    M_UNUSED(timestamp);
+    M_UNUSED(elapsed);
+  }
 };
 
 class JuniorRocketState {

@@ -26,8 +26,8 @@ struct comma_is_space : std::ctype<char> {
   static mask const* get_table()
   {
     static mask rc[table_size];
-    rc[','] = std::ctype_base::space;
-    rc['\n'] = std::ctype_base::space;
+    rc[size_t(',')] = std::ctype_base::space;
+    rc[size_t('\n')] = std::ctype_base::space;
     return &rc[0];
   }
 };

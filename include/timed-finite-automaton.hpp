@@ -12,8 +12,8 @@ public:
   using Duration = decltype(TimePoint{} - TimePoint{});
 
   TimedFiniteAutomaton(State start_state)
-    : _state{start_state}
-    , _start_state{start_state}
+    : _start_state{start_state}
+    , _state{start_state}
     , _state_change{}
     , _now{}
   {}

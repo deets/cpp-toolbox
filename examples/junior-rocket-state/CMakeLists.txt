@@ -11,3 +11,4 @@ add_executable(
 )
 
 target_compile_features(junior-rocket-state PUBLIC cxx_std_17)
+target_compile_options(junior-rocket-state PRIVATE -Wall -Wextra -Wpedantic -Werror)
