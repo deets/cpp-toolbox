@@ -96,10 +96,19 @@ void JuniorRocketState::produce_events(uint32_t timestamp, float pressure, float
   {
     feed(timestamp, event::EXPECTED_APOGEE_TIME_REACHED);
   }
-  if(_state_machine.state() == state::MEASURE_FALLING_PRESSURE3)
+  if(_pressure_drop_assessment)
   {
-    // TODO: actual assessment
-    feed(timestamp, event::PRESSURE_LINEAR);
+    switch(*_pressure_drop_assessment)
+    {
+    case pressure_drop::LINEAR:
+      feed(timestamp, event::PRESSURE_LINEAR);
+      break;
+    case pressure_drop::QUADRATIC:
+      feed(timestamp, event::PRESSURE_QUADRATIC);
+      break;
+    }
+    // We need to re-measure
+    _pressure_drop_assessment = std::nullopt;
   }
 }
 
@@ -127,10 +136,17 @@ void JuniorRocketState::handle_state_transition(state to, float pressure)
     break;
   case state::MEASURE_FALLING_PRESSURE3:
     _pressure_measurements[2] = pressure;
+    assess_pressure_drop();
     break;
   default:
     break;
   }
+}
+
+void JuniorRocketState::assess_pressure_drop()
+{
+  // TOOD: actually implement
+  _pressure_drop_assessment = pressure_drop::LINEAR;
 }
 
 void JuniorRocketState::drive(uint32_t timestamp, float pressure, float acceleration)

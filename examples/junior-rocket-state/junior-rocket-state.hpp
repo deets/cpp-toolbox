@@ -51,6 +51,11 @@ enum timeouts : uint32_t {
   FALLING_PRESSURE_TIMEOUT = 1000*1000,
 };
 
+enum class pressure_drop {
+  LINEAR,
+  QUADRATIC,
+};
+
 // We seem to reach a shoulder of ~20m/s^2, so
 // this looks safe
 constexpr float LAUNCH_ACCELERATION_THRESHOLD = 15.0;
@@ -110,6 +115,7 @@ struct StateObserver {
   }
 };
 
+
 class JuniorRocketState {
   using state_machine_t = tfa::TimedFiniteAutomaton<state, event, uint32_t>;
 
@@ -129,6 +135,7 @@ private:
   void produce_events(uint32_t timestamp, float pressure, float acceleration);
   void handle_state_transition(state to, float pressure);
   void feed(uint32_t timestamp, event);
+  void assess_pressure_drop();
 
   state_machine_t _state_machine;
 
@@ -139,7 +146,7 @@ private:
   StateObserver& _state_observer;
 
   float _pressure_measurements[3];
-
+  std::optional<pressure_drop> _pressure_drop_assessment;
 };
 
 // To allow grahpniz output
