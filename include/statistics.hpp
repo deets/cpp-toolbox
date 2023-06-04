@@ -3,6 +3,8 @@
 #pragma once
 #include <optional>
 #include <iostream>
+#include <numeric>
+
 
 namespace deets::statistics {
 
@@ -59,6 +61,46 @@ struct RollingStatistics
     }
     previous = value;
     return result;
+  }
+};
+
+template<typename F, int N>
+struct ArrayStatistics
+{
+  using result_t = statistics_t<F>;
+  static constexpr F n = F(N);
+
+  std::array<F, N> values;
+  size_t updates = 0;
+
+  std::optional<result_t> update(F value)
+  {
+    values[updates++ % N] = value;
+    if(updates >= N)
+    {
+      const auto average = std::reduce(
+        values.begin(), values.end()
+        ) / n;
+      const F variance = std::reduce(
+        values.begin(), values.end(),
+        0.0, [average](const F& previous, const F& current)
+        {
+          return previous + pow(average - current, 2);
+        }
+        ) / (n - 1); // Not sure exactly why, but that's the python version
+      return result_t{ average, variance };
+    }
+    return std::nullopt;
+  }
+
+  std::optional<F> median()
+  {
+    if(updates >= N)
+    {
+      std::sort(values.begin(), values.end());
+      return values[N / 2];
+    }
+    return std::nullopt;
   }
 };
 
