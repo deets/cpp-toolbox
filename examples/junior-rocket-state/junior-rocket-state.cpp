@@ -37,25 +37,6 @@ JuniorRocketState::JuniorRocketState(StateObserver& state_observer)
 }
 
 
-  // acceleration > threshold -> tentative start time of flight
-  // reached launched state: start time of flight confirmed
-
-  // RESTART_PRESSURE_MEASUREMENT can only be generated when
-  // PRESSURE_BELOW_LAUNCH_THRESHOLD
-  // if(acceleration > threshold)
-  // {
-  //   _state_machine.feed(event::ACCELERATION_ABOVE_THRESHOLD);
-  // }
-  // else
-  // {
-  //    _state_machine.feed(event::ACCELERATION_BELOW_THRESHOLD);
-  //    if(acceleration < 0)
-  //    {
-  //      _state_machine.feed(event::ACCELERATION_NEGATIVE);
-  //    }
-  // }
-  // if
-
 void JuniorRocketState::process_pressure(float pressure)
 {
   // TODO: this is not correct, but we don't have a proper
@@ -92,10 +73,12 @@ void JuniorRocketState::produce_events(uint32_t timestamp, float pressure, float
       feed(timestamp, event::ACCELERATION_AROUND_ZERO);
     }
   }
+
   if(flighttime() && *flighttime() >= (APOGEE_TIME + APOGEE_DETECTION_MARGIN))
   {
     feed(timestamp, event::EXPECTED_APOGEE_TIME_REACHED);
   }
+
   if(_pressure_drop_assessment)
   {
     switch(*_pressure_drop_assessment)
