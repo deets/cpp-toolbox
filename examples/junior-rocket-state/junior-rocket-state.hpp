@@ -3,6 +3,7 @@
 #pragma once
 
 #include <timed-finite-automaton.hpp>
+#include <statistics.hpp>
 #include <cstdint>
 #include <ostream>
 #include <optional>
@@ -14,6 +15,9 @@ enum class state
 {
   // Start state
   IDLE,
+  // Compute the ground pressuer by averaging
+  // pressure over a certain amount of time
+  ESTABLISH_GROUND_PRESSURE,
   // After stable pressure is detected
   WAIT_FOR_LAUNCH,
   // We measured acceleration beyond the threshold,
@@ -65,11 +69,16 @@ constexpr float FREEFALL_ACCELERATION_THRESHOLD = 3.0;
 // mbar difference between our ground pressure and
 // the height we consider safely as "launched".
 constexpr float LAUNCH_PRESSURE_DIFFERENTIAL = 5.0;
+// The drop in pressure from the minimum we
+// accept to say "we've peaked"
+constexpr float PEAK_PRESSURE_MARGIN = .6;
 // Apogee according to simulation
 constexpr float APOGEE_TIME = 6565*1000;
 // Together with APOGEE_TIME used to trigger
 // chute ejection.
-constexpr float APOGEE_DETECTION_MARGIN = 1000*1000;
+constexpr float APOGEE_DETECTION_MARGIN = 5000*1000;
+constexpr float INITIAL_PRESSURE_VARIANCE = 1.0;
+constexpr float PRESSURE_VARIANCE_THRESHOLD = 3.0;
 
 enum class event {
   GROUND_PRESSURE_ESTABLISHED,
@@ -145,8 +154,11 @@ private:
 
   StateObserver& _state_observer;
 
+  std::optional<deets::statistics::ArrayStatistics<float, 2>> _ground_pressure_stats;
+  std::optional<deets::statistics::ArrayStatistics<float, 10>> _peak_pressure_stats;
   float _pressure_measurements[3];
   std::optional<pressure_drop> _pressure_drop_assessment;
+  std::optional<float> _peak_pressure;
 };
 
 // To allow grahpniz output

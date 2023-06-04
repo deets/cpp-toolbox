@@ -14,7 +14,8 @@ JuniorRocketState::JuniorRocketState(StateObserver& state_observer)
   , _state_observer(state_observer)
 {
   auto& sm = _state_machine; // Just a convenient alias
-  sm.add_transition(state::IDLE, event::GROUND_PRESSURE_ESTABLISHED, state::WAIT_FOR_LAUNCH);
+  sm.add_transition(state::IDLE, 0, state::ESTABLISH_GROUND_PRESSURE);
+  sm.add_transition(state::ESTABLISH_GROUND_PRESSURE, event::GROUND_PRESSURE_ESTABLISHED, state::WAIT_FOR_LAUNCH);
   sm.add_transition(state::WAIT_FOR_LAUNCH, event::ACCELERATION_ABOVE_THRESHOLD, state::ACCELERATION_DETECTED);
   sm.add_transition(state::ACCELERATION_DETECTED, event::ACCELERATION_BELOW_THRESHOLD, state::WAIT_FOR_LAUNCH);
   sm.add_transition(state::ACCELERATION_DETECTED, timeouts::ACCELERATION, state::ACCELERATING);
@@ -39,11 +40,34 @@ JuniorRocketState::JuniorRocketState(StateObserver& state_observer)
 
 void JuniorRocketState::process_pressure(float pressure)
 {
-  // TODO: this is not correct, but we don't have a proper
-  // pressure pre-amble yet.
-  if(!_ground_pressure)
+  if(_ground_pressure_stats)
   {
-    _ground_pressure = pressure;
+    const auto stats = _ground_pressure_stats->update(pressure);
+    if(stats)
+    {
+      std::cout << "pressure stats: " << stats->average << ", " << stats->variance <<  "\n";
+      if(stats->variance < PRESSURE_VARIANCE_THRESHOLD)
+      {
+        _ground_pressure = stats->average;
+      }
+    }
+  }
+  if(_peak_pressure_stats)
+  {
+    if(_peak_pressure_stats->update(pressure))
+    {
+      if(_peak_pressure)
+      {
+        const auto median = *_peak_pressure_stats->median();
+        std::cout << "median: " << *_peak_pressure << "\n";
+        _peak_pressure = std::min(median, *_peak_pressure);
+      }
+      else
+      {
+        _peak_pressure = *_peak_pressure_stats->median();
+      }
+      std::cout << "peak pressure: " << *_peak_pressure << "\n";
+    }
   }
 }
 
@@ -72,6 +96,11 @@ void JuniorRocketState::produce_events(uint32_t timestamp, float pressure, float
     {
       feed(timestamp, event::ACCELERATION_AROUND_ZERO);
     }
+  }
+
+  if(_peak_pressure && pressure > *_peak_pressure + PEAK_PRESSURE_MARGIN)
+  {
+    feed(timestamp, event::PRESSURE_PEAK_REACHED);
   }
 
   if(flighttime() && *flighttime() >= (APOGEE_TIME + APOGEE_DETECTION_MARGIN))
@@ -105,11 +134,24 @@ void JuniorRocketState::handle_state_transition(state to, float pressure)
 {
   switch(to)
   {
+  case state::ESTABLISH_GROUND_PRESSURE:
+    // This kicks of the statistics of the ground pressure calibration
+    _ground_pressure_stats = decltype(_ground_pressure_stats)::value_type();
+    break;
   case state::WAIT_FOR_LAUNCH:
     _liftoff_timestamp = std::nullopt;
+    // no need to feed the machine again
+    _ground_pressure_stats = std::nullopt;
     break;
   case state::ACCELERATION_DETECTED:
     _liftoff_timestamp = *_last_timestamp;
+    break;
+  case state::LAUNCHED:
+    _peak_pressure_stats = decltype(_peak_pressure_stats)::value_type();
+    break;
+  case state::FALLING:
+    // We don't need to keep track anymore
+    _peak_pressure_stats = std::nullopt;
     break;
   case state::MEASURE_FALLING_PRESSURE1:
     _pressure_measurements[0] = pressure;
@@ -143,6 +185,7 @@ void JuniorRocketState::drive(uint32_t timestamp, float pressure, float accelera
   // TODO: timediff!
   const auto elapsed = timestamp - *_last_timestamp;
   _last_timestamp = timestamp;
+  process_pressure(pressure);
 
   const auto old = _state_machine.state();
 
@@ -150,7 +193,6 @@ void JuniorRocketState::drive(uint32_t timestamp, float pressure, float accelera
   _state_machine.elapsed(elapsed);
   _state_observer.elapsed(timestamp, elapsed);
 
-  process_pressure(pressure);
   produce_events(timestamp, pressure, acceleration);
 
   const auto to = _state_machine.state();
@@ -192,6 +234,7 @@ std::ostream& operator<<(std::ostream& os, const state& state)
   switch(state)
   {
     M_STATE(IDLE)
+    M_STATE(ESTABLISH_GROUND_PRESSURE)
     M_STATE(WAIT_FOR_LAUNCH)
     M_STATE(ACCELERATION_DETECTED)
     M_STATE(ACCELERATING)
