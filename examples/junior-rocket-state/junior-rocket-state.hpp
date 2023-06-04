@@ -57,8 +57,14 @@ constexpr float LAUNCH_ACCELERATION_THRESHOLD = 15.0;
 // We only get an absolute acceleration, so it is never
 // below zero, instead we need to
 constexpr float FREEFALL_ACCELERATION_THRESHOLD = 3.0;
-// mbar
+// mbar difference between our ground pressure and
+// the height we consider safely as "launched".
 constexpr float LAUNCH_PRESSURE_DIFFERENTIAL = 5.0;
+// Apogee according to simulation
+constexpr float APOGEE_TIME = 6565*1000;
+// Together with APOGEE_TIME used to trigger
+// chute ejection.
+constexpr float APOGEE_DETECTION_MARGIN = 1000*1000;
 
 enum class event {
   GROUND_PRESSURE_ESTABLISHED,
@@ -121,7 +127,7 @@ public:
 private:
   void process_pressure(float pressure);
   void produce_events(uint32_t timestamp, float pressure, float acceleration);
-  void handle_state_transition(state to);
+  void handle_state_transition(state to, float pressure);
   void feed(uint32_t timestamp, event);
 
   state_machine_t _state_machine;
@@ -131,6 +137,8 @@ private:
   std::optional<uint32_t> _liftoff_timestamp;
 
   StateObserver& _state_observer;
+
+  float _pressure_measurements[3];
 
 };
 

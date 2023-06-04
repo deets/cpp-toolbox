@@ -92,6 +92,15 @@ void JuniorRocketState::produce_events(uint32_t timestamp, float pressure, float
       feed(timestamp, event::ACCELERATION_AROUND_ZERO);
     }
   }
+  if(flighttime() && *flighttime() >= (APOGEE_TIME + APOGEE_DETECTION_MARGIN))
+  {
+    feed(timestamp, event::EXPECTED_APOGEE_TIME_REACHED);
+  }
+  if(_state_machine.state() == state::MEASURE_FALLING_PRESSURE3)
+  {
+    // TODO: actual assessment
+    feed(timestamp, event::PRESSURE_LINEAR);
+  }
 }
 
 void JuniorRocketState::feed(uint32_t timestamp, event e)
@@ -100,7 +109,7 @@ void JuniorRocketState::feed(uint32_t timestamp, event e)
   _state_observer.event_produced(timestamp, e);
 }
 
-void JuniorRocketState::handle_state_transition(state to)
+void JuniorRocketState::handle_state_transition(state to, float pressure)
 {
   switch(to)
   {
@@ -109,6 +118,15 @@ void JuniorRocketState::handle_state_transition(state to)
     break;
   case state::ACCELERATION_DETECTED:
     _liftoff_timestamp = *_last_timestamp;
+    break;
+  case state::MEASURE_FALLING_PRESSURE1:
+    _pressure_measurements[0] = pressure;
+    break;
+  case state::MEASURE_FALLING_PRESSURE2:
+    _pressure_measurements[1] = pressure;
+    break;
+  case state::MEASURE_FALLING_PRESSURE3:
+    _pressure_measurements[2] = pressure;
     break;
   default:
     break;
@@ -139,7 +157,7 @@ void JuniorRocketState::drive(uint32_t timestamp, float pressure, float accelera
   const auto to = _state_machine.state();
   if(old != to)
   {
-    handle_state_transition(to);
+    handle_state_transition(to, pressure);
     _state_observer.state_changed(timestamp, to);
   }
 
