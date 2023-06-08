@@ -8,6 +8,28 @@
 
 namespace deets::statistics {
 
+template <typename InputIt>
+typename std::iterator_traits<InputIt>::value_type reduce(InputIt start, InputIt end)
+{
+  using T = typename std::iterator_traits<InputIt>::value_type;
+  T accu{};
+  for(;start != end; ++start)
+  {
+    accu += *start;
+  }
+  return accu;
+}
+
+template< class InputIt, class T, class BinaryOp >
+T reduce( InputIt first, InputIt last, T init, BinaryOp binary_op )
+{
+  for(;first != last; ++first)
+  {
+    init = binary_op(init, *first);
+  }
+  return init;
+}
+
 
 template <typename F>
 struct statistics_t
@@ -78,10 +100,10 @@ struct ArrayStatistics
     values[updates++ % N] = value;
     if(updates >= N)
     {
-      const auto average = std::reduce(
+      const auto average = reduce(
         values.begin(), values.end()
         ) / n;
-      const F variance = std::reduce(
+      const F variance = reduce(
         values.begin(), values.end(),
         0.0, [average](const F& previous, const F& current)
         {
