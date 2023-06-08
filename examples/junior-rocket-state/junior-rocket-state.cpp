@@ -4,7 +4,6 @@
 
 #include "junior-rocket-state.hpp"
 
-#include <_types/_uint32_t.h>
 #include <iostream>
 
 using namespace far::junior;

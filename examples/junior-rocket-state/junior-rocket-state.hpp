@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <timed-finite-automaton.hpp>
-#include <statistics.hpp>
+#include "timed-finite-automaton.hpp"
+#include "statistics.hpp"
 #include <cstdint>
 #include <ostream>
 #include <optional>

@@ -3,8 +3,9 @@
 #pragma once
 #include <optional>
 #include <iostream>
+#include <algorithm>
 #include <numeric>
-
+#include <cmath>
 
 namespace deets::statistics {
 
@@ -107,7 +108,7 @@ struct ArrayStatistics
         values.begin(), values.end(),
         0.0, [average](const F& previous, const F& current)
         {
-          return previous + pow(average - current, 2);
+          return previous + std::pow(average - current, 2);
         }
         ) / (n - 1); // Not sure exactly why, but that's the python version
       return result_t{ average, variance };
