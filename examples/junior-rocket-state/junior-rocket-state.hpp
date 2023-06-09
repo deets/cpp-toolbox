@@ -138,6 +138,7 @@ public:
   void dot(std::ostream& os);
   void drive(uint32_t, float, float);
   std::optional<uint32_t> flighttime() const;
+  std::optional<float> ground_pressure() const;
 
 private:
   void process_pressure(float pressure);

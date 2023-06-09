@@ -37,6 +37,11 @@ JuniorRocketState::JuniorRocketState(StateObserver& state_observer)
 }
 
 
+std::optional<float> JuniorRocketState::ground_pressure() const
+{
+  return _ground_pressure;
+}
+
 void JuniorRocketState::process_pressure(float pressure)
 {
   if(_ground_pressure_stats)
