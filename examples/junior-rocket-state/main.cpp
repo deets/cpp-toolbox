@@ -1,32 +1,42 @@
 #include "junior-rocket-state.hpp"
 #include "simulator.hpp"
+#include <chrono>
 #include <iostream>
 
 using namespace far::junior;
 
 namespace {
 
+using namespace std::chrono_literals;
+
 class PrintObserver : public StateObserver
 {
-  void data(uint32_t timestamp, float pressure, float acceleration) override
+  void data(timestamp_t timestamp, float pressure, float acceleration) override
   {
-    std::cout << "data: " << timestamp << ", p: " << pressure << ", a: " << acceleration << "\n";
+    std::cout << "data: " << us_since_start(timestamp) << ", p: " << pressure << ", a: " << acceleration << "\n";
   };
-  void state_changed(uint32_t timestamp, state to) override
+  void state_changed(timestamp_t timestamp, state to) override
   {
-    std::cout << "state changed: " << timestamp << " -> " << to << "\n";
-    elasped_since_state_changed = 0;
+    std::cout << "state changed: " << us_since_start(timestamp) << " -> " << to << "\n";
+    elasped_since_state_changed = duration_t::zero();
   };
-  virtual void event_produced(uint32_t timestamp, event e) override
+  virtual void event_produced(timestamp_t timestamp, event e) override
   {
-    std::cout << "event fed: " << timestamp << " -> " << e << "\n";
+    std::cout << "event fed: " << us_since_start(timestamp) << " -> " << e << "\n";
   };
-  void elapsed(uint32_t timestamp, uint32_t elapsed) override
+  void elapsed(timestamp_t timestamp, duration_t elapsed) override
   {
     elasped_since_state_changed += elapsed;
-    std::cout << "elapsed: " << timestamp << ": " << elasped_since_state_changed << "\n";
+    std::cout << "elapsed: " << us_since_start(timestamp) << ": " << elasped_since_state_changed / 1ms << "\n";
   }
-  uint32_t elasped_since_state_changed = 0;
+
+  uint32_t us_since_start(timestamp_t t)
+  {
+    using namespace std::chrono_literals;
+    return (t - start) / 1us;
+  }
+  timestamp_t start = std::chrono::steady_clock::now();
+  duration_t elasped_since_state_changed = duration_t::zero();
 
 };
 

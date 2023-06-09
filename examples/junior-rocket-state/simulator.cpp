@@ -5,21 +5,21 @@
 #include <iterator>
 #include <sstream>
 #include <locale>
-
+#include <chrono>
 
 namespace far::junior {
 
+using namespace std::chrono_literals;
+
 struct data_row_t {
-  float time;
+  timestamp_t time;
   float totalacc;
   float pressure;
 
-  uint32_t microseconds() const {
-    return uint32_t(time * 1000 * 1000);
-  }
 };
 
 namespace {
+using namespace std::chrono_literals;
 
 struct comma_is_space : std::ctype<char> {
   comma_is_space() : std::ctype<char>(get_table()) {}
@@ -32,7 +32,7 @@ struct comma_is_space : std::ctype<char> {
   }
 };
 
-std::vector<data_row_t> load_data(const char *filename)
+std::vector<data_row_t> load_data(const char *filename, std::chrono::steady_clock::time_point start)
 {
   std::vector<data_row_t> result;
   std::ifstream inf(filename);
@@ -44,7 +44,9 @@ std::vector<data_row_t> load_data(const char *filename)
       std::istringstream iss(line);
       iss.imbue(std::locale(iss.getloc(), new comma_is_space()));
       data_row_t item;
-      iss >> item.time >> item.totalacc >> item.pressure;
+      float raw_timestamp;
+      iss >> raw_timestamp >> item.totalacc >> item.pressure;
+      item.time = start + (uint32_t(raw_timestamp * 1000000.0) * 1us);
       result.emplace_back(item);
     }
   }
@@ -55,7 +57,7 @@ void drive(const std::vector<data_row_t>& data, JuniorRocketState &state)
 {
   for(const auto& entry : data)
   {
-    state.drive(entry.microseconds(), entry.pressure, entry.totalacc);
+    state.drive(entry.time, entry.pressure, entry.totalacc);
   }
 
 }
@@ -84,8 +86,9 @@ combine_data(const std::vector<data_row_t> &first_stage_data,
 
 void load_and_drive(const char* first_stage_filename, const char* second_stage_filename, JuniorRocketState& state)
 {
-  auto first_stage_data = load_data(first_stage_filename);
-  auto second_stage_data = load_data(second_stage_filename);
+  const auto start = std::chrono::steady_clock::now();
+  auto first_stage_data = load_data(first_stage_filename, start);
+  auto second_stage_data = load_data(second_stage_filename, start);
   if(first_stage_data.size() == 0 || second_stage_data.size() == 0)
   {
     std::cerr << "Couldn't load data, check file\n";
