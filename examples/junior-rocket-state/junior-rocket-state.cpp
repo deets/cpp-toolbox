@@ -184,6 +184,8 @@ void JuniorRocketState::drive(uint32_t timestamp, float pressure, float accelera
   if(!_last_timestamp)
   {
     _last_timestamp = timestamp;
+    // Initial call of state observer for our start-state
+    _state_observer.state_changed(timestamp, _state_machine.state());
     return;
   }
   // TODO: timediff!
