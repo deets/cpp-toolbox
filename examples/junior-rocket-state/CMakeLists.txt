@@ -9,6 +9,10 @@ add_executable(
   junior-rocket-state.cpp
   simulator.cpp
 )
+target_compile_definitions(junior-rocket-state
+  PRIVATE
+  USE_IOSTREAM
+)
 
 target_compile_features(junior-rocket-state PUBLIC cxx_std_17)
 target_compile_options(junior-rocket-state PRIVATE -Wall -Wextra -Wpedantic -Werror)

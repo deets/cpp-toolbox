@@ -162,9 +162,11 @@ private:
   std::optional<float> _peak_pressure;
 };
 
-// To allow grahpniz output
+#ifdef USE_IOSTREAM
+// To allow graphviz output
 std::ostream& operator<<(std::ostream&, const state&);
 std::ostream& operator<<(std::ostream&, const event&);
+#endif
 
 } // namespace junior
 } // namespace far

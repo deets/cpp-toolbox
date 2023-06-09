@@ -120,7 +120,7 @@ TEST_CASE( "Add state transition on timeout", "[tfa]" ) {
   }
 
 }
-
+#ifdef USE_IOSTREAM
 TEST_CASE( "graphviz rendering", "[tfa]" ) {
   TestAutomaton t{A};
   SECTION("Single state is start state")
@@ -207,3 +207,4 @@ TEST_CASE( "graphviz rendering", "[tfa]" ) {
     REQUIRE(dot == expected);
   }
 }
+#endif

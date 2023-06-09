@@ -3,8 +3,9 @@
 
 
 #include "junior-rocket-state.hpp"
-
+#ifdef USE_IOSTREAM
 #include <iostream>
+#endif
 
 using namespace far::junior;
 
@@ -49,7 +50,9 @@ void JuniorRocketState::process_pressure(float pressure)
     const auto stats = _ground_pressure_stats->update(pressure);
     if(stats)
     {
+      #ifdef USE_IOSTREAM
       std::cout << "pressure stats: " << stats->average << ", " << stats->variance <<  "\n";
+      #endif
       if(stats->variance < PRESSURE_VARIANCE_THRESHOLD)
       {
         _ground_pressure = stats->average;
@@ -63,14 +66,18 @@ void JuniorRocketState::process_pressure(float pressure)
       if(_peak_pressure)
       {
         const auto median = *_peak_pressure_stats->median();
+        #ifdef USE_IOSTREAM
         std::cout << "median: " << *_peak_pressure << "\n";
+        #endif
         _peak_pressure = std::min(median, *_peak_pressure);
       }
       else
       {
         _peak_pressure = *_peak_pressure_stats->median();
       }
+      #ifdef USE_IOSTREAM
       std::cout << "peak pressure: " << *_peak_pressure << "\n";
+      #endif
     }
   }
 }
@@ -222,13 +229,16 @@ std::optional<uint32_t> JuniorRocketState::flighttime() const
   return std::nullopt;
 }
 
+#ifdef USE_IOSTREAM
 void JuniorRocketState::dot(std::ostream &os)
 {
   _state_machine.dot(os, "us");
 }
+#endif
 
 namespace far::junior {
 
+#ifdef USE_IOSTREAM
 #define M_STATE(_state) \
   case state::_state: \
   os << #_state; \
@@ -283,5 +293,6 @@ std::ostream& operator<<(std::ostream& os, const event& event)
   }
   return os;
 }
+#endif
 
 } // namespace far::junior
