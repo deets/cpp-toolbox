@@ -24,16 +24,16 @@ JuniorRocketState::JuniorRocketState(StateObserver& state_observer)
   sm.add_transition(state::LAUNCHED, timeouts::MOTOR_BURNTIME - timeouts::ACCELERATION, state::BURNOUT);
   sm.add_transition(state::BURNOUT, timeouts::SEPARATION_TIMEOUT, state::SEPARATION);
   sm.add_transition(state::SEPARATION, 0, state::COASTING);
-  sm.add_transition(state::COASTING, event::PRESSURE_PEAK_REACHED, state::FALLING);
-  sm.add_transition(state::COASTING, event::EXPECTED_APOGEE_TIME_REACHED, state::FALLING);
-  sm.add_transition(state::FALLING, timeouts::FALLING_PRESSURE_TIMEOUT, state::MEASURE_FALLING_PRESSURE1);
+  sm.add_transition(state::COASTING, event::PRESSURE_PEAK_REACHED, state::FALLING_);
+  sm.add_transition(state::COASTING, event::EXPECTED_APOGEE_TIME_REACHED, state::FALLING_);
+  sm.add_transition(state::FALLING_, timeouts::FALLING_PRESSURE_TIMEOUT, state::MEASURE_FALLING_PRESSURE1);
   sm.add_transition(state::MEASURE_FALLING_PRESSURE1, timeouts::FALLING_PRESSURE_TIMEOUT, state::MEASURE_FALLING_PRESSURE2);
   sm.add_transition(state::MEASURE_FALLING_PRESSURE2, timeouts::FALLING_PRESSURE_TIMEOUT, state::MEASURE_FALLING_PRESSURE3);
   sm.add_transition(state::MEASURE_FALLING_PRESSURE3, event::PRESSURE_LINEAR, state::DROUGE_OPENED);
   sm.add_transition(state::MEASURE_FALLING_PRESSURE3, event::PRESSURE_QUADRATIC, state::DROUGE_FAILED);
   sm.add_transition(state::DROUGE_OPENED, event::PRESSURE_ABOVE_LAUNCH_THRESHOLD, state::LANDED);
   sm.add_transition(state::DROUGE_FAILED, event::PRESSURE_ABOVE_LAUNCH_THRESHOLD, state::LANDED);
-  sm.add_transition(state::DROUGE_FAILED, event::RESTART_PRESSURE_MEASUREMENT, state::FALLING);
+  sm.add_transition(state::DROUGE_FAILED, event::RESTART_PRESSURE_MEASUREMENT, state::FALLING_);
 }
 
 
@@ -148,7 +148,7 @@ void JuniorRocketState::handle_state_transition(state to, float pressure)
   case state::LAUNCHED:
     _peak_pressure_stats = decltype(_peak_pressure_stats)::value_type();
     break;
-  case state::FALLING:
+  case state::FALLING_:
     // We don't need to keep track anymore
     _peak_pressure_stats = std::nullopt;
     break;
@@ -242,7 +242,7 @@ std::ostream& operator<<(std::ostream& os, const state& state)
     M_STATE(SEPARATION)
     M_STATE(COASTING)
     M_STATE(PEAK_REACHED)
-    M_STATE(FALLING)
+    M_STATE(FALLING_)
     M_STATE(MEASURE_FALLING_PRESSURE1)
     M_STATE(MEASURE_FALLING_PRESSURE2)
     M_STATE(MEASURE_FALLING_PRESSURE3)

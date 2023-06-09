@@ -38,7 +38,7 @@ enum class state
   // We detected a pressure drop, and thus reached
   // the peak.
   PEAK_REACHED,
-  FALLING,
+  FALLING_,
   MEASURE_FALLING_PRESSURE1,
   MEASURE_FALLING_PRESSURE2,
   MEASURE_FALLING_PRESSURE3,
