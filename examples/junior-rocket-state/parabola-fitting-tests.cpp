@@ -44,6 +44,17 @@ public:
     return _coefficients;
   }
 
+  std::optional<Scalar> error() const
+  {
+    if(_coefficients)
+    {
+      Eigen::Vector<Scalar, Samples> error = _M * (*_coefficients);
+      error -= _b;
+      return error.dot(error);
+    }
+    return std::nullopt;
+  }
+
 private:
   void solve()
   {
@@ -140,4 +151,18 @@ TEST_CASE("parabola class", "[fitting]" )
     REQUIRE(coeffs[1] == Catch::Approx(b));
     REQUIRE(coeffs[2] == Catch::Approx(c));
   }
+
+  SECTION("The error is neglible")
+  {
+    for(auto i=0; i < samples; ++i)
+    {
+      classifier.feed(xs[i], ys[i]);
+    }
+    const auto error = *classifier.error();
+    // I got this number by printing out the
+    // error... it would be better to use a better
+    // equality assessment, but I'm too lazy now.
+    REQUIRE(error == Catch::Approx(9.76021e-22));
+  }
+
 }
